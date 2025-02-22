@@ -140,6 +140,7 @@ impl Application for KeyboardApp {
                  - North: space.\n\
         ",
         )
+        .size(40)
         .font(Font {
             family: Family::Monospace,
             weight: Weight::Semibold,
@@ -186,15 +187,15 @@ impl Application for KeyboardApp {
                 } else {
                     Color::WHITE
                 };
-                let letter_text = Text::new(letter.to_string()).size(18).font(Font {
+                let letter_text = Text::new(letter.to_string()).size(30).font(Font {
                     family: Family::Monospace,
                     weight: Weight::Semibold,
                     stretch: Stretch::Normal,
                     style: Style::Normal,
                 });
                 Container::new(letter_text)
-                    .width(32)
-                    .height(32)
+                    .width(60)
+                    .height(60)
                     .center_x()
                     .center_y()
                     .style(iced::theme::Container::Custom(Box::new(KeyboardKeyStyle {
