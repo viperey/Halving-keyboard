@@ -2,8 +2,10 @@
 
 Welcome to the **Halving Keyboard** project, a concept exploring innovative user interfaces for text input in video 
 games. 
+  
 This interface is inspired by the principles of binary tree search, a technique I discovered while watching the 
-"Kademlia Explained" video on YouTube: [1QdKhNpsj8M](https://www.youtube.com/watch?v=1QdKhNpsj8M).
+"Kademlia Explained" video on [YouTube](https://www.youtube.com/watch?v=1QdKhNpsj8M).
+
 
 ## Concept Overview
 
@@ -11,11 +13,14 @@ The Halving Keyboard demonstrates a novel approach to inputting text in environm
 may not be ideal, such as in gaming. By leveraging the binary tree search method, users can efficiently narrow down 
 their input choices, ultimately selecting the desired text with fewer interactions.
 
+
 ## Inspiration
 
 The inspiration for this project came from the need to streamline text input methods in gaming scenarios. 
 Many games require quick and accurate text entry, and traditional methods can be cumbersome. 
+  
 By merging the efficiency of binary search algorithms with input interfaces, we seek to enhance the gaming experience.
+
 
 ## Demo
 
