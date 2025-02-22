@@ -6,8 +6,10 @@ use std::{sync::mpsc::Sender, thread, time::Duration};
 #[derive(Debug, Clone, Copy)]
 pub enum GamepadMessage {
     OneLeft,
-    HalvingLeft,
     OneRight,
+    HalvingOn,
+    HalvingOff,
+    HalvingLeft,
     HalvingRight,
     Enter,
     Delete,
@@ -20,8 +22,10 @@ impl GamepadMessage {
     pub fn icon(&self) -> &str {
         match self {
             GamepadMessage::OneLeft => "←",
-            GamepadMessage::HalvingLeft => "↶",
             GamepadMessage::OneRight => "→",
+            GamepadMessage::HalvingOn => "½",
+            GamepadMessage::HalvingOff => "1",
+            GamepadMessage::HalvingLeft => "↶",
             GamepadMessage::HalvingRight => "↷",
             GamepadMessage::Enter => "⏎",
             GamepadMessage::Delete => "⌫",
@@ -36,8 +40,10 @@ impl fmt::Display for GamepadMessage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             GamepadMessage::OneLeft => write!(f, "OneLeft"),
-            GamepadMessage::HalvingLeft => write!(f, "HalvingLeft"),
             GamepadMessage::OneRight => write!(f, "OneRight"),
+            GamepadMessage::HalvingOn => write!(f, "HalvingOn"),
+            GamepadMessage::HalvingOff => write!(f, "HalvingOff"),
+            GamepadMessage::HalvingLeft => write!(f, "HalvingLeft"),
             GamepadMessage::HalvingRight => write!(f, "HalvingRight"),
             GamepadMessage::Enter => write!(f, "Enter"),
             GamepadMessage::Delete => write!(f, "Delete"),
@@ -58,6 +64,7 @@ pub fn run_gamepad_loop(tx: Sender<GamepadMessage>) {
         let mut west_reported = false;
         let mut north_reported = false;
         let mut left_trigger_reported = false;
+        let mut right_trigger_reported = false;
 
         println!("Gamepad thread started, listening for events...");
 
@@ -75,6 +82,10 @@ pub fn run_gamepad_loop(tx: Sender<GamepadMessage>) {
                             Button::DPadRight => dpad_right_reported = false,
                             Button::South => south_reported = false,
                             Button::West => west_reported = false,
+                            Button::RightTrigger => {
+                                let _ = tx.send(GamepadMessage::HalvingOff);
+                                right_trigger_reported = false
+                            }
                             Button::LeftTrigger => {
                                 let _ = tx.send(GamepadMessage::Lowercase);
                                 left_trigger_reported = false
@@ -95,13 +106,30 @@ pub fn run_gamepad_loop(tx: Sender<GamepadMessage>) {
                 dpad_left_reported = true;
             }
 
-            if pressed_buttons.contains(&Button::DPadRight) && !dpad_right_reported {
-                if pressed_buttons.contains(&Button::RightTrigger) {
-                    let _ = tx.send(GamepadMessage::HalvingRight);
-                } else {
-                    let _ = tx.send(GamepadMessage::OneRight);
-                }
+            if pressed_buttons.contains(&Button::DPadRight)
+                && pressed_buttons.contains(&Button::RightTrigger)
+                && !dpad_right_reported
+            {
+                let _ = tx.send(GamepadMessage::HalvingRight);
                 dpad_right_reported = true;
+                let _ = tx.send(GamepadMessage::HalvingOn);
+                right_trigger_reported = true;
+            }
+
+            if pressed_buttons.contains(&Button::DPadRight)
+                && !pressed_buttons.contains(&Button::RightTrigger)
+                && !dpad_right_reported
+            {
+                let _ = tx.send(GamepadMessage::OneRight);
+                dpad_right_reported = true;
+            }
+
+            if !pressed_buttons.contains(&Button::DPadRight)
+                && pressed_buttons.contains(&Button::RightTrigger)
+                && !right_trigger_reported
+            {
+                let _ = tx.send(GamepadMessage::HalvingOn);
+                right_trigger_reported = true;
             }
 
             if pressed_buttons.contains(&Button::South) && !south_reported {

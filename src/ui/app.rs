@@ -20,6 +20,7 @@ pub struct KeyboardApp {
     gamepad_rx: Arc<Mutex<mpsc::Receiver<GamepadMessage>>>,
     uppercase: bool,
     event_history: Vec<(GamepadMessage, Instant)>,
+    halving_on: bool,
 }
 
 impl Application for KeyboardApp {
@@ -37,6 +38,7 @@ impl Application for KeyboardApp {
                 gamepad_rx: flags,
                 uppercase: false,
                 event_history: Vec::new(),
+                halving_on: false,
             },
             Command::none(),
         )
@@ -58,7 +60,7 @@ impl Application for KeyboardApp {
                         self.selected_index -= 1;
                     }
                     GamepadMessage::HalvingLeft if self.selected_index > 0 => {
-                        self.selected_index /= 2;
+                        self.selected_index = (self.selected_index as f32 / 2.0).floor() as usize;
                     }
                     GamepadMessage::OneRight if self.selected_index < 25 => {
                         self.selected_index += 1;
@@ -80,6 +82,12 @@ impl Application for KeyboardApp {
                     }
                     GamepadMessage::Lowercase => {
                         self.uppercase = false;
+                    }
+                    GamepadMessage::HalvingOn => {
+                        self.halving_on = true;
+                    }
+                    GamepadMessage::HalvingOff => {
+                        self.halving_on = false;
                     }
                     _ => {}
                 }
@@ -132,8 +140,9 @@ impl Application for KeyboardApp {
                 Halving: cut the distance to any ends of the keyboard by half.\n\
                 \n\
                 Actions:\n\
-                 - Left/Right to navigate.\n\
-                 - Hold R1 to enter in halving mode.\n\
+                 - Left/Right to navigate normally.\n\
+                 - Hold R1 to enter halving mode. You'll see the candidate halving letters highlighted.\n\
+                 - R1 + direction to navigate in halving mode.\n\
                  - Hold L1 for uppercase.\n\
                  - South: enter.\n\
                  - West: delete.\n\
@@ -175,6 +184,8 @@ impl Application for KeyboardApp {
             .width(Length::Fill)
             .center_y();
 
+        let left_halve_position = self.get_left_jump_position();
+        let right_halve_position = self.get_right_jump_position();
         let letters: Vec<_> = (0..26)
             .map(|i| {
                 let letter = if self.uppercase {
@@ -183,7 +194,9 @@ impl Application for KeyboardApp {
                     (b'a' + i as u8) as char
                 };
                 let bg = if i == self.selected_index {
-                    Color::from_rgb8(0xD3, 0xD3, 0xD3)
+                    Color::from_rgba8(255, 200, 0, 1.0)
+                } else if self.halving_on && self.is_next_jump_position(i) {
+                    Color::from_rgba8(255, 150, 0, 0.4)
                 } else {
                     Color::WHITE
                 };
@@ -265,5 +278,31 @@ impl KeyboardApp {
 
     fn enter_space(&mut self) {
         self.text.push(' ');
+    }
+
+    fn is_next_jump_position(&self, position: usize) -> bool {
+        if self.selected_index > position {
+            self.get_left_jump_position() == position
+        } else if self.selected_index < position {
+            self.get_right_jump_position() == position
+        } else {
+            false
+        }
+    }
+
+    fn get_left_jump_position(&self) -> usize {
+        if self.selected_index > 0 {
+            (self.selected_index as f32 / 2.0).floor() as usize
+        } else {
+            0
+        }
+    }
+
+    fn get_right_jump_position(&self) -> usize {
+        if self.selected_index < 25 {
+            ((25 - self.selected_index) as f32 / 2.0).ceil() as usize + self.selected_index
+        } else {
+            25
+        }
     }
 }
