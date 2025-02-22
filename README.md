@@ -27,4 +27,5 @@ By merging the efficiency of binary search algorithms with input interfaces, we 
 To see the Halving Keyboard in action, check out our demo video: [doc/demo.gif](./doc/demo.gif)
 ![til](./doc/demo.gif)
 This video showcases how the interface operates and the potential benefits for gamers.
-
+  
+Disclaimer: GIF playback speed may feel slower than real-time, check the [mp4 version](./doc/demo.mp4) for a smoother experience.
